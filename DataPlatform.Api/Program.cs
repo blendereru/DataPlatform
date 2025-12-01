@@ -40,8 +40,14 @@ builder.Services.AddHangfire(config =>
 });
 builder.Services.AddHangfireServer();
 builder.Services.AddSignalR();
+builder.Services.AddSwaggerGen();
 builder.Services.AddControllersWithViews();
 var app = builder.Build();
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "DataPlatform v1");
+});
 app.UseStaticFiles();
 app.UseAuthorization();
 app.MapControllers();

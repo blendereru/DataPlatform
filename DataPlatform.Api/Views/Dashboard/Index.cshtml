@@ -1,27 +1,59 @@
 @{
-Layout = "_Layout";
+    Layout = "_Layout";
+    ViewData["Title"] = "Real-Time Dashboard";
 }
 
-<h2>Real-Time Dashboard</h2>
+<h2 class="mb-4">Real-Time Dashboard</h2>
 
-<div class="card p-3">
-    <p><strong>Total Events:</strong> <span id="totalEvents">0</span></p>
-    <p><strong>Last Event Payload:</strong> <span id="lastPayload">-</span></p>
-    <p><strong>Last Event ID:</strong> <span id="lastId">-</span></p>
+<div class="row g-4">
+    <!-- Total Events Card -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-primary h-100">
+            <div class="card-body">
+                <h5 class="card-title">Total Events</h5>
+                <p class="display-6" id="totalEvents">0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Last Event Payload Card -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-success h-100">
+            <div class="card-body">
+                <h5 class="card-title">Last Event Payload</h5>
+                <p class="display-6" id="lastPayload">-</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Last Event ID Card -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-warning h-100">
+            <div class="card-body">
+                <h5 class="card-title">Last Event ID</h5>
+                <p class="display-6" id="lastId">-</p>
+            </div>
+        </div>
+    </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+<!-- Optional: Additional cards for future stats -->
+<div class="row g-4 mt-3" id="additionalStats">
+    <!-- New cards can be dynamically appended here -->
+</div>
 
-<script>
-    const connection = new signalR.HubConnectionBuilder()
-        .withUrl("/datahub")
-        .build();
+@section Scripts {
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/datahub")
+            .build();
 
-    connection.on("statsUpdated", data => {
-        document.getElementById("totalEvents").innerText = data.totalEvents;
-        document.getElementById("lastPayload").innerText = data.lastEventPayload;
-        document.getElementById("lastId").innerText = data.lastEventId;
-    });
+        connection.on("statsUpdated", data => {
+            document.getElementById("totalEvents").innerText = data.totalEvents;
+            document.getElementById("lastPayload").innerText = data.lastEventPayload;
+            document.getElementById("lastId").innerText = data.lastEventId;
+        });
 
-    connection.start().catch(err => console.error(err));
-</script>
+        connection.start().catch(err => console.error(err));
+    </script>
+}
