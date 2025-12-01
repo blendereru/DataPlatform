@@ -1,5 +1,6 @@
 using DataPlatform.Api.Data;
 using DataPlatform.Api.Models;
+using DataPlatform.Api.Models.Messages;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,7 +30,12 @@ public class EventsController : Controller
         _db.Events.Add(entity);
         await _db.SaveChangesAsync();
 
-        await _bus.Publish(new { EventId = entity.Id, Payload = payload });
+        await _bus.Publish(new EventMessage 
+        {
+            EventId = entity.Id,
+            Payload = payload,
+            CreatedAt = entity.CreatedAt
+        });
 
         return Ok(entity);
     }

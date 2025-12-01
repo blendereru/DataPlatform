@@ -1,4 +1,6 @@
+using DataPlatform.Api.Consumers;
 using DataPlatform.Api.Data;
+using DataPlatform.Api.Hubs;
 using Hangfire;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -17,12 +19,18 @@ builder.Services.AddDbContext<ApplicationContext>(opts =>
 });
 builder.Services.AddMassTransit(x =>
 {
+    x.AddConsumer<EventMessageConsumer>();
+    
     x.UsingRabbitMq((context, cfg) =>
     {
         cfg.Host("localhost", "/", h =>
         {
             h.Username("guest");
             h.Password("guest");
+        });
+        cfg.ReceiveEndpoint("event-message-queue", e =>
+        {
+            e.ConfigureConsumer<EventMessageConsumer>(context);
         });
     });
 });
@@ -38,4 +46,5 @@ app.UseStaticFiles();
 app.UseAuthorization();
 app.MapControllers();
 app.UseHangfireDashboard("/jobs");
+app.MapHub<DataHub>("/datahub");
 app.Run();

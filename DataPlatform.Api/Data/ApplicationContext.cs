@@ -11,4 +11,5 @@ public class ApplicationContext : DbContext
     }
     
     public DbSet<EventEntity> Events => Set<EventEntity>();
+    public DbSet<Stat> Stats => Set<Stat>();
 }

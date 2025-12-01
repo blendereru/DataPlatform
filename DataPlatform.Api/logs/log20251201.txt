@@ -21,3 +21,26 @@ CREATE TABLE [Events] (
 2025-12-01 19:16:31.023 +05:00 [INF] Executed DbCommand (18ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
 VALUES (N'20251201141608_InitialCreate', N'8.0.22');
+2025-12-01 19:30:46.615 +05:00 [INF] Executed DbCommand (25ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2025-12-01 19:30:46.747 +05:00 [INF] Executed DbCommand (25ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2025-12-01 19:30:46.771 +05:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2025-12-01 19:30:46.783 +05:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2025-12-01 19:30:46.858 +05:00 [INF] Executed DbCommand (28ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+2025-12-01 19:30:46.887 +05:00 [INF] Applying migration '20251201143025_AddStatsTable'.
+2025-12-01 19:30:47.020 +05:00 [INF] Executed DbCommand (57ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [Stats] (
+    [Id] uniqueidentifier NOT NULL,
+    [Key] nvarchar(max) NOT NULL,
+    [Value] nvarchar(max) NOT NULL,
+    CONSTRAINT [PK_Stats] PRIMARY KEY ([Id])
+);
+2025-12-01 19:30:47.070 +05:00 [INF] Executed DbCommand (44ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20251201143025_AddStatsTable', N'8.0.22');
