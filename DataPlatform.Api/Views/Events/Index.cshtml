@@ -1,0 +1,19 @@
+@model IEnumerable<DataPlatform.Api.Models.EventEntity>
+
+<h2>Events</h2>
+
+<table class="table">
+    <tr>
+        <th>ID</th>
+        <th>Payload</th>
+        <th>Created</th>
+    </tr>
+    @foreach (var e in Model)
+    {
+        <tr>
+            <td>@e.Id</td>
+            <td>@e.Payload</td>
+            <td>@e.CreatedAt</td>
+        </tr>
+    }
+</table>
