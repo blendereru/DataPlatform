@@ -10,6 +10,7 @@ public class ApplicationContext : DbContext
         
     }
     
+    public DbSet<User> Users => Set<User>();
     public DbSet<EventEntity> Events => Set<EventEntity>();
     public DbSet<Stat> Stats => Set<Stat>();
 }
