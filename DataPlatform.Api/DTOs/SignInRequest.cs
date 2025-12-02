@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
+namespace DataPlatform.Api.DTOs;
+
 ///
 /// DTO used when submitting login credentials.
 ///

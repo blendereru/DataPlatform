@@ -2411,3 +2411,49 @@ WHERE [u].[Username] = @__signInRequest_Username_0
 2025-12-02 22:00:43.013 +05:00 [WRN] Server win-m93vtsb6pci:2684:8a0e669b stopped non-gracefully due to SqlServerHeartbeatProcess. Outstanding work on those dispatchers could be aborted, and there can be delays in background processing. This server instance will be incorrectly shown as active for a while. To avoid non-graceful shutdowns, investigate what prevents from stopping gracefully and add CancellationToken support for those methods.
 2025-12-02 22:00:43.033 +05:00 [INF] Server win-m93vtsb6pci:2684:8a0e669b successfully reported itself as stopped in 14.0557 ms
 2025-12-02 22:00:43.034 +05:00 [INF] Server win-m93vtsb6pci:2684:8a0e669b has been stopped in total 662.1622 ms
+2025-12-02 22:12:18.805 +05:00 [INF] Start installing Hangfire SQL objects...
+2025-12-02 22:12:22.997 +05:00 [INF] Hangfire SQL objects installed.
+2025-12-02 22:12:23.266 +05:00 [INF] User profile is available. Using 'C:\Users\User\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-12-02 22:12:24.031 +05:00 [INF] Configured endpoint event-message-queue, Consumer: DataPlatform.Api.Consumers.EventMessageConsumer
+2025-12-02 22:12:24.986 +05:00 [WRN] The WebRootPath was not found: C:\Users\User\RiderProjects\DataPlatform\DataPlatform.Api\wwwroot. Static files may be unavailable.
+2025-12-02 22:12:25.141 +05:00 [INF] Now listening on: http://localhost:5187
+2025-12-02 22:12:25.195 +05:00 [INF] Starting Hangfire Server using job storage: 'SQL Server: .@dataplatform-db'
+2025-12-02 22:12:25.243 +05:00 [INF] Using the following options for SQL Server job storage: Queue poll interval: 00:00:00.
+2025-12-02 22:12:25.246 +05:00 [INF] Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+2025-12-02 22:12:25.302 +05:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-12-02 22:12:25.307 +05:00 [INF] Hosting environment: Development
+2025-12-02 22:12:25.310 +05:00 [INF] Content root path: C:\Users\User\RiderProjects\DataPlatform\DataPlatform.Api
+2025-12-02 22:12:25.479 +05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5187/swagger/v1/swagger.json - null null
+2025-12-02 22:12:26.021 +05:00 [INF] Server win-m93vtsb6pci:9632:d77e39e3 successfully announced in 706.597 ms
+2025-12-02 22:12:26.041 +05:00 [INF] Server win-m93vtsb6pci:9632:d77e39e3 is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, SqlServerHeartbeatProcess, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+2025-12-02 22:12:26.207 +05:00 [INF] Server win-m93vtsb6pci:9632:d77e39e3 all the dispatchers started
+2025-12-02 22:12:26.218 +05:00 [INF] Bus started: "rabbitmq://localhost/"
+2025-12-02 22:12:26.632 +05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5187/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 1153.0287ms
+2025-12-02 22:12:53.292 +05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5187/swagger/v1/swagger.json - null null
+2025-12-02 22:12:53.507 +05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5187/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 214.2203ms
+2025-12-02 22:12:54.758 +05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5187/swagger/v1/swagger.json - null null
+2025-12-02 22:12:54.830 +05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5187/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 72.0952ms
+2025-12-02 22:13:31.451 +05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5187/swagger/index.html - null null
+2025-12-02 22:13:31.761 +05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5187/swagger/index.html - 200 null text/html;charset=utf-8 310.8228ms
+2025-12-02 22:13:31.960 +05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5187/swagger/v1/swagger.json - null null
+2025-12-02 22:13:31.981 +05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5187/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 20.7652ms
+2025-12-02 22:15:17.695 +05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5187/dashboard - null null
+2025-12-02 22:15:17.741 +05:00 [INF] Executing endpoint 'DataPlatform.Api.Controllers.DashboardController.Index (DataPlatform.Api)'
+2025-12-02 22:15:17.788 +05:00 [INF] Route matched with {action = "Index", controller = "Dashboard"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Index() on controller DataPlatform.Api.Controllers.DashboardController (DataPlatform.Api).
+2025-12-02 22:15:17.828 +05:00 [INF] Executing action method DataPlatform.Api.Controllers.DashboardController.Index (DataPlatform.Api) - Validation state: "Valid"
+2025-12-02 22:15:17.852 +05:00 [INF] Executed action method DataPlatform.Api.Controllers.DashboardController.Index (DataPlatform.Api), returned result Microsoft.AspNetCore.Mvc.ViewResult in 1.6413ms.
+2025-12-02 22:15:17.883 +05:00 [INF] Executing ViewResult, running view Index.
+2025-12-02 22:15:18.022 +05:00 [INF] Executed ViewResult - view Index executed in 145.2929ms.
+2025-12-02 22:15:18.027 +05:00 [INF] Executed action DataPlatform.Api.Controllers.DashboardController.Index (DataPlatform.Api) in 231.9749ms
+2025-12-02 22:15:18.031 +05:00 [INF] Executed endpoint 'DataPlatform.Api.Controllers.DashboardController.Index (DataPlatform.Api)'
+2025-12-02 22:15:18.043 +05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5187/dashboard - 200 null text/html; charset=utf-8 347.943ms
+2025-12-02 22:15:34.721 +05:00 [INF] Server win-m93vtsb6pci:9632:d77e39e3 caught stopping signal...
+2025-12-02 22:15:34.725 +05:00 [INF] Application is shutting down...
+2025-12-02 22:15:35.001 +05:00 [INF] Server win-m93vtsb6pci:9632:d77e39e3 All dispatchers stopped
+2025-12-02 22:15:35.029 +05:00 [INF] Server win-m93vtsb6pci:9632:d77e39e3 successfully reported itself as stopped in 20.6212 ms
+2025-12-02 22:15:35.031 +05:00 [INF] Server win-m93vtsb6pci:9632:d77e39e3 has been stopped in total 306.8098 ms
+2025-12-02 22:15:35.409 +05:00 [INF] Bus stopped: "rabbitmq://localhost/"
