@@ -20,6 +20,7 @@
 
     <ItemGroup>
       <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+      <PackageReference Include="Elastic.Serilog.Sinks" Version="8.19.0" />
       <PackageReference Include="Hangfire" Version="1.8.22" />
       <PackageReference Include="Hangfire.SqlServer" Version="1.8.22" />
       <PackageReference Include="MassTransit" Version="8.5.7" />

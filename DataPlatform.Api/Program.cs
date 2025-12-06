@@ -9,14 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .CreateLogger();
-builder.Host.UseSerilog((context, config) =>
+builder.Host.UseSerilog((context, loggerConfig) => 
 {
-    config
-        .WriteTo.Console()
-        .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day);
+    loggerConfig.ReadFrom.Configuration(context.Configuration);
 });
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
@@ -71,6 +66,9 @@ app.UseSwaggerUI(c =>
 });
 app.UseStaticFiles();
 app.UseAuthorization();
+using var sc = app.Services.CreateScope();
+var db = sc.ServiceProvider.GetRequiredService<ApplicationContext>();
+await db.Database.MigrateAsync();
 app.MapControllers();
 app.UseHangfireDashboard("/jobs");
 app.MapHub<DataHub>("/datahub");
