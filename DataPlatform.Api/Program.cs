@@ -3,9 +3,11 @@ using DataPlatform.Api.Consumers;
 using DataPlatform.Api.Data;
 using DataPlatform.Api.Hubs;
 using Hangfire;
+using Hangfire.PostgreSql;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,7 +28,7 @@ builder.Services.AddAuthorization(options =>
 });
 builder.Services.AddDbContext<ApplicationContext>(opts =>
 {
-    opts.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    opts.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddMassTransit(x =>
 {
@@ -51,7 +53,11 @@ builder.Services.AddMassTransit(x =>
 });
 builder.Services.AddHangfire(config =>
 {
-    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"));
+    config.UsePostgreSqlStorage(options =>
+    {
+        options.UseExistingNpgsqlConnection(new NpgsqlConnection(builder
+            .Configuration.GetConnectionString("DefaultConnection")));
+    });
 });
 builder.Services.AddHangfireServer();
 builder.Services.AddSignalR();
@@ -77,3 +83,5 @@ app.MapControllers();
 app.UseHangfireDashboard("/jobs");
 app.MapHub<DataHub>("/datahub");
 app.Run();
+
+public partial class Program { }
