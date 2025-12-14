@@ -2,6 +2,8 @@ using System.Reflection;
 using DataPlatform.Api.Consumers;
 using DataPlatform.Api.Data;
 using DataPlatform.Api.Hubs;
+using DataPlatform.Api.Services;
+using DataPlatform.Api.Services.Abstractions;
 using Hangfire;
 using Hangfire.PostgreSql;
 using MassTransit;
@@ -11,77 +13,166 @@ using Npgsql;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Host.UseSerilog((context, loggerConfig) => 
 {
     loggerConfig.ReadFrom.Configuration(context.Configuration);
 });
+
+// ============================================================================
+// Authentication & Authorization
+// ============================================================================
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
     {
         options.LoginPath = "/auth/signin";
         options.AccessDeniedPath = "/auth/denied";
     });
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => 
         policy.RequireRole("Admin"));
 });
+
+// ============================================================================
+// Database
+// ============================================================================
 builder.Services.AddDbContext<ApplicationContext>(opts =>
 {
     opts.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-builder.Services.AddMassTransit(x =>
+
+// ============================================================================
+// Data Platform Services - NEW!
+// ============================================================================
+builder.Services.AddScoped<IDataSourceConnectionService, DataSourceConnectionService>();
+builder.Services.AddScoped<IQueryExecutionService, QueryExecutionService>();
+builder.Services.AddScoped<PipelineSchedulerService>();
+
+// ============================================================================
+// MassTransit (Message Queue)
+// ============================================================================
+if (builder.Environment.EnvironmentName != "Testing")
 {
-    x.AddConsumer<EventMessageConsumer>();
-    
-    x.UsingRabbitMq((context, cfg) =>
+    builder.Services.AddMassTransit(x =>
     {
-        var rabbitHost = builder.Configuration["RabbitMq:Host"] ?? "localhost";
-        var rabbitUser = builder.Configuration["RabbitMq:Username"] ?? "guest";
-        var rabbitPass = builder.Configuration["RabbitMq:Password"] ?? "guest";
+        // Register pipeline execution consumer
+        x.AddConsumer<PipelineExecutionConsumer>();
         
-        cfg.Host(rabbitHost, "/", h =>
+        x.UsingRabbitMq((context, cfg) =>
         {
-            h.Username(rabbitUser);
-            h.Password(rabbitPass);
-        });
-        cfg.ReceiveEndpoint("event-message-queue", e =>
-        {
-            e.ConfigureConsumer<EventMessageConsumer>(context);
+            var rabbitHost = builder.Configuration["RabbitMq:Host"] ?? "localhost";
+            var rabbitUser = builder.Configuration["RabbitMq:Username"] ?? "guest";
+            var rabbitPass = builder.Configuration["RabbitMq:Password"] ?? "guest";
+            
+            cfg.Host(rabbitHost, "/", h =>
+            {
+                h.Username(rabbitUser);
+                h.Password(rabbitPass);
+            });
+
+            // Configure pipeline execution queue
+            cfg.ReceiveEndpoint("pipeline-execution-queue", e =>
+            {
+                e.ConfigureConsumer<PipelineExecutionConsumer>(context);
+            });
         });
     });
-});
-builder.Services.AddHangfire(config =>
+}
+
+// ============================================================================
+// Hangfire (Background Jobs & Scheduling)
+// ============================================================================
+if (builder.Environment.EnvironmentName != "Testing")
 {
-    config.UsePostgreSqlStorage(options =>
+    builder.Services.AddHangfire(config =>
     {
-        options.UseExistingNpgsqlConnection(new NpgsqlConnection(builder
-            .Configuration.GetConnectionString("DefaultConnection")));
+        config.UsePostgreSqlStorage(options =>
+        {
+            options.UseExistingNpgsqlConnection(new NpgsqlConnection(builder
+                .Configuration.GetConnectionString("DefaultConnection")));
+        });
     });
-});
-builder.Services.AddHangfireServer();
+    builder.Services.AddHangfireServer();
+}
+
+// ============================================================================
+// SignalR (Real-time updates)
+// ============================================================================
 builder.Services.AddSignalR();
+
+// ============================================================================
+// API & Documentation
+// ============================================================================
 builder.Services.AddSwaggerGen(options =>
 {
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     options.IncludeXmlComments(xmlPath);
+    
+    options.SwaggerDoc("v1", new()
+    {
+        Title = "Data Platform API",
+        Version = "v1",
+        Description = @"Modern data platform for connecting, cataloging, transforming, and querying data sources.
+
+**Key Features:**
+- Connect to PostgreSQL, MySQL, SQL Server, MongoDB
+- Automatic schema discovery
+- ETL/ELT pipeline orchestration
+- Ad-hoc SQL query execution
+- Data quality monitoring
+- Real-time execution tracking"
+    });
 });
+
 builder.Services.AddControllersWithViews();
+
+// ============================================================================
+// Application Setup
+// ============================================================================
 var app = builder.Build();
+
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "DataPlatform v1");
+    c.RoutePrefix = "swagger"; // Access at /swagger
 });
+
 app.UseStaticFiles();
 app.UseAuthorization();
-using var sc = app.Services.CreateScope();
-var db = sc.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+// Run database migrations
+using var scope = app.Services.CreateScope();
+var db = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 await db.Database.MigrateAsync();
+
+// ============================================================================
+// Configure Hangfire Recurring Jobs
+// ============================================================================
+if (!app.Environment.EnvironmentName.Equals("Testing"))
+{
+    app.UseHangfireDashboard("/jobs");
+    
+    // Schedule pipeline checker to run every minute
+    RecurringJob.AddOrUpdate<PipelineSchedulerService>(
+        "check-scheduled-pipelines",
+        service => service.CheckScheduledPipelinesAsync(),
+        "* * * * *" // Every minute
+    );
+}
+
+// ============================================================================
+// Routes
+// ============================================================================
 app.MapControllers();
-app.UseHangfireDashboard("/jobs");
 app.MapHub<DataHub>("/datahub");
+
+// Redirect root to Swagger
+app.MapGet("/", () => Results.Redirect("/swagger"));
+
 app.Run();
 
 public partial class Program { }

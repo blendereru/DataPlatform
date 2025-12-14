@@ -94,8 +94,8 @@ public class EventsControllerTests
     public async Task Create_Returns_BadRequest_When_Request_Is_Null()
     {
         var authClient = await CreateAuthenticatedClient();
-
-        var response = await authClient.PostAsync("/api/events", null);
+        var content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json");
+        var response = await authClient.PostAsync("/api/events", content);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

@@ -9,8 +9,13 @@ public class ApplicationContext : DbContext
     {
         
     }
-    
-    public DbSet<User> Users => Set<User>();
-    public DbSet<EventEntity> Events => Set<EventEntity>();
-    public DbSet<Stat> Stats => Set<Stat>();
+
+    public DbSet<Pipeline> Pipelines { get; set; } = null!;
+    public DbSet<PipelineRun> PipelineRuns { get; set; } = null!;
+    public DbSet<DataSource> DataSources { get; set; } = null!;
+    public DbSet<Dataset> Datasets { get; set; } = null!;
+    public DbSet<DataQualityCheck> DataQualityChecks { get; set; } = null!;
+    public DbSet<DataQualityRule> DataQualityRules { get; set; } = null!;
+    public DbSet<DatasetColumn> DatasetColumns { get; set; } = null!;
+    public DbSet<Query> Queries { get; set; } = null!;
 }

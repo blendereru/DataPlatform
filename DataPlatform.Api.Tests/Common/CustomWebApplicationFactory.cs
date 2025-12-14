@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Hangfire;
+using Hangfire.PostgreSql;
+using Microsoft.Extensions.Hosting;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 
@@ -51,6 +54,9 @@ public class CustomWebApplicationFactory
     // ----------------------------------------------------
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // Set environment to Testing to skip production MassTransit registration
+        builder.UseEnvironment("Testing");
+        
         builder.ConfigureServices(services =>
         {
             // -------------------------------
@@ -66,15 +72,48 @@ public class CustomWebApplicationFactory
                 options.UseNpgsql(_dbContainer.GetConnectionString()));
 
             // -------------------------------
-            // Remove existing MassTransit setup
+            // Configure Hangfire for tests
+            // Production Hangfire is skipped via environment check
             // -------------------------------
-            services.RemoveAll<IBus>();
-            services.RemoveAll<IBusControl>();
-            services.RemoveAll<IPublishEndpoint>();
-            services.RemoveAll<ISendEndpointProvider>();
+            services.AddHangfire(config =>
+            {
+                config.UsePostgreSqlStorage(options =>
+                {
+                    options.UseNpgsqlConnection(_dbContainer.GetConnectionString());
+                });
+            });
+            services.AddHangfireServer();
+
+            // -------------------------------
+            // Remove and reconfigure Hangfire to use test database
+            // -------------------------------
+            services.RemoveAll<Hangfire.BackgroundJobServer>();
+            services.RemoveAll<Hangfire.IBackgroundJobClient>();
+            
+            // Remove Hangfire hosted service
+            var hangfireHostedServices = services
+                .Where(d => d.ServiceType == typeof(IHostedService) && 
+                           d.ImplementationType?.FullName?.Contains("Hangfire") == true)
+                .ToList();
+            
+            foreach (var service in hangfireHostedServices)
+            {
+                services.Remove(service);
+            }
+            
+            // Re-add Hangfire with test database connection
+            services.AddHangfire(config =>
+            {
+                config.UsePostgreSqlStorage(options =>
+                {
+                    options.UseNpgsqlConnection(_dbContainer.GetConnectionString());
+                });
+            });
+            services.AddHangfireServer();
 
             // -------------------------------
             // MassTransit + RabbitMQ (Testcontainers)
+            // Production MassTransit is skipped via environment check
             // -------------------------------
             services.AddMassTransitTestHarness(x =>
             {

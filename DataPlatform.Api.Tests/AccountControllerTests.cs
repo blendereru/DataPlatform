@@ -165,7 +165,7 @@ public class AccountControllerTests
         var response = await _client.PostAsync("/auth/logout", null);
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-        Assert.StartsWith("/auth/signin", response.Headers.Location?.ToString());
+        Assert.StartsWith("/auth/signin", response.Headers.Location?.PathAndQuery);
     }
 
     [Fact]
