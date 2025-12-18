@@ -5,6 +5,7 @@ using DataPlatform.Api.Models.Messages;
 using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataPlatform.Api.Controllers;
 

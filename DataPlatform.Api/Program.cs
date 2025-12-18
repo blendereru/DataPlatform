@@ -13,7 +13,6 @@ using Npgsql;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-
 builder.Host.UseSerilog((context, loggerConfig) => 
 {
     loggerConfig.ReadFrom.Configuration(context.Configuration);
@@ -38,9 +37,13 @@ builder.Services.AddAuthorization(options =>
 // ============================================================================
 // Database
 // ============================================================================
+var dataSourceBuilder = new NpgsqlDataSourceBuilder(builder.Configuration
+    .GetConnectionString("DefaultConnection"));
+dataSourceBuilder.EnableDynamicJson();
+var dataSource = dataSourceBuilder.Build();
 builder.Services.AddDbContext<ApplicationContext>(opts =>
 {
-    opts.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    opts.UseNpgsql(dataSource);
 });
 
 // ============================================================================

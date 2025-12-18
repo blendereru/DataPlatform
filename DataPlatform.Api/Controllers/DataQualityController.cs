@@ -3,6 +3,7 @@ using DataPlatform.Api.DTOs;
 using DataPlatform.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 /// <summary>
 /// Manages data quality rules and executes validation checks.

@@ -1,6 +1,8 @@
 using DataPlatform.Api.Data;
 using DataPlatform.Api.Models;
+using DataPlatform.Api.Models.Messages;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataPlatform.Api.Services;
 

@@ -1,150 +1,87 @@
-version: "3.9"
+version: '3.8'
 
 services:
-
-  # ============================================================
-  # SQL Server 2022
-  # ============================================================
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: sqlserver
-    environment:
-      ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "Your_Strong_Password123!"
+  # Main platform database
+  postgres-platform:
+    image: postgres:15
+    container_name: dataplatform-db
     ports:
-      - "1434:1433"
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: dataplatform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     volumes:
-      - sql_data:/var/opt/mssql
+      - postgres-platform-data:/var/lib/postgresql/data
     networks:
-      - app-network
+      - dataplatform-network
 
-  # ============================================================
-  # RabbitMQ 4.x
-  # ============================================================
+  # Source database for demo
+  postgres-source:
+    image: postgres:15
+    container_name: source-db
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: ecommerce
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: demo123
+    volumes:
+      - postgres-source-data:/var/lib/postgresql/data
+      - ./demo-data/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - dataplatform-network
+
+  # Message queue
   rabbitmq:
     image: rabbitmq:4.0-management
     container_name: rabbitmq
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
     ports:
       - "5672:5672"
       - "15672:15672"
-    networks:
-      - app-network
-
-  # ============================================================
-  # Elasticsearch 8.15.x with security enabled
-  # ============================================================
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.2
-    container_name: elasticsearch
     environment:
-      - discovery.type=single-node
-      - ELASTIC_PASSWORD=Your_Strong_Password123!
-      - xpack.security.enabled=true
-      - xpack.security.http.ssl.enabled=false
-      - xpack.security.transport.ssl.enabled=false
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
-    ports:
-      - "9200:9200"
-      - "9300:9300"
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     volumes:
-      - esdata:/usr/share/elasticsearch/data
+      - rabbitmq-data:/var/lib/rabbitmq
     networks:
-      - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "curl -u elastic:Your_Strong_Password123! -f http://localhost:9200/_cluster/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 30
+      - dataplatform-network
 
-  # ============================================================
-  # Setup container to create Kibana user
-  # ============================================================
-  elasticsearch-setup:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.2
-    container_name: elasticsearch-setup
-    command: >
-      bash -c '
-        echo "Waiting for Elasticsearch availability";
-        until curl -s -u elastic:Your_Strong_Password123! http://elasticsearch:9200/_cluster/health | grep -q "green\|yellow"; do
-          sleep 5;
-        done;
-        echo "Creating kibana_system user";
-        curl -X POST -u elastic:Your_Strong_Password123! -H "Content-Type: application/json" http://elasticsearch:9200/_security/user/kibana_system/_password -d "{\"password\":\"Your_Strong_Password123!\"}" || true;
-        echo "Setup complete";
-      '
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    networks:
-      - app-network
-
-  # ============================================================
-  # Kibana 8.15.x using kibana_system user
-  # ============================================================
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.15.2
-    container_name: kibana
+  # Database admin UI
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
     ports:
-      - "5601:5601"
+      - "5050:80"
     environment:
-      ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
-      ELASTICSEARCH_USERNAME: "kibana_system"
-      ELASTICSEARCH_PASSWORD: "Your_Strong_Password123!"
-      
-      xpack.security.encryptionKey: "something_at_least_32_characters_long_1"
-      xpack.encryptedSavedObjects.encryptionKey: "something_at_least_32_characters_long_2"
-      xpack.reporting.encryptionKey: "something_at_least_32_characters_long_3"
-    depends_on:
-      elasticsearch-setup:
-        condition: service_completed_successfully
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
     networks:
-      - app-network
+      - dataplatform-network
 
-  # ============================================================
-  # Your .NET API
-  # ============================================================
-  dataplatform-api:
-    build:
-      context: .
-      dockerfile: DataPlatform.Api/Dockerfile
-    container_name: dataplatform-api
+  # Monitoring (optional but impressive)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
     ports:
-      - "8080:8080"
-      - "8081:8081"
+      - "3000:3000"
     environment:
-      # ASP.NET Core
-      ASPNETCORE_URLS: "http://+:8080"
-      ASPNETCORE_ENVIRONMENT: "Production"
-
-      # SQL Server Connection
-      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=DataPlatform;User=sa;Password=Your_Strong_Password123!;TrustServerCertificate=True;"
-
-      # RabbitMQ Configuration
-      RabbitMq__Host: "rabbitmq"
-      RabbitMq__Username: "guest"
-      RabbitMq__Password: "guest"
-
-      # Elasticsearch for Serilog (array index 2 is the Elasticsearch sink)
-      Serilog__WriteTo__2__Args__nodeUris: "http://elasticsearch:9200"
-      Serilog__WriteTo__2__Args__username: "elastic"
-      Serilog__WriteTo__2__Args__password: "Your_Strong_Password123!"
-      Serilog__WriteTo__2__Args__autoRegisterTemplate: "true"
-      Serilog__WriteTo__2__Args__indexFormat: "logs-dataplatform-{0:yyyy.MM.dd}"
-
-    depends_on:
-      - sqlserver
-      - rabbitmq
-      - elasticsearch
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-clock-panel
+    volumes:
+      - grafana-data:/var/lib/grafana
     networks:
-      - app-network
+      - dataplatform-network
 
 volumes:
-  sql_data:
-  esdata:
+  postgres-platform-data:
+  postgres-source-data:
+  rabbitmq-data:
+  pgadmin-data:
+  grafana-data:
 
 networks:
-  app-network:
+  dataplatform-network:
     driver: bridge

@@ -4,6 +4,7 @@ using DataPlatform.Api.Models;
 using DataPlatform.Api.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataPlatform.Api.Controllers;
 

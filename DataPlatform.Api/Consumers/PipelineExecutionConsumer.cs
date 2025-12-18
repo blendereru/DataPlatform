@@ -3,6 +3,7 @@ using DataPlatform.Api.Models;
 using DataPlatform.Api.Models.Messages;
 using DataPlatform.Api.Services.Abstractions;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataPlatform.Api.Consumers;
 

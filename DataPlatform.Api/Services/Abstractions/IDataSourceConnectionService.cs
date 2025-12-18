@@ -16,4 +16,28 @@ public interface IDataSourceConnectionService
 
 public class ConnectionTestResult
 {
+    /// <summary>
+    /// Whether the connection test succeeded.
+    /// </summary>
+    public bool Success { get; set; }
+    
+    /// <summary>
+    /// Human-readable message about the test result.
+    /// </summary>
+    public string Message { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Additional details about the connection (e.g., database version, server info).
+    /// </summary>
+    public string? Details { get; set; }
+    
+    /// <summary>
+    /// Error message if the connection failed.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+    
+    /// <summary>
+    /// Time taken to establish the connection in milliseconds.
+    /// </summary>
+    public double? ConnectionTimeMs { get; set; }
 }
